@@ -127,6 +127,7 @@
             align-items: center;
             border-radius: 20px;
             box-shadow: 0 22px 50px rgba(0, 0, 0, 0.46), inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+            transition: background 0.45s ease, border-color 0.45s ease, box-shadow 0.45s ease, padding 0.45s ease, backdrop-filter 0.45s ease, min-width 0.45s ease;
         }
         .timer-display {
             font-family: 'Silkscreen', sans-serif;
@@ -137,6 +138,7 @@
             width: 500px;
             text-align: center;
             letter-spacing: 2px;
+            transition: margin 0.45s ease, text-shadow 0.45s ease;
         }
         .current-mission {
             font-family: 'Silkscreen', sans-serif;
@@ -153,6 +155,35 @@
             border-radius: 14px;
         }
         .current-mission span { color: var(--text-main); }
+        .pixel-title,
+        .time-settings,
+        .controls,
+        .hotkey-hint {
+            transition: opacity 0.38s ease, transform 0.38s ease, max-height 0.38s ease, margin 0.38s ease;
+        }
+        body.running-minimal .timer-box {
+            background: transparent;
+            border-color: transparent;
+            box-shadow: none;
+            backdrop-filter: none;
+            padding: 12px 0;
+            min-width: 0;
+        }
+        body.running-minimal .timer-display {
+            margin-bottom: 14px;
+            text-shadow: 0 0 24px rgba(87, 255, 159, 0.42);
+        }
+        body.running-minimal .pixel-title,
+        body.running-minimal .time-settings,
+        body.running-minimal .controls,
+        body.running-minimal .hotkey-hint {
+            opacity: 0;
+            transform: translateY(14px);
+            max-height: 0;
+            margin: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
         .time-settings {
             display: flex;
             align-items: flex-end;
@@ -493,9 +524,14 @@
             document.getElementById('timer').textContent = `${m}:${s}`;
         }
 
+        function setMinimalMode(active) {
+            document.body.classList.toggle('running-minimal', active);
+        }
+
         function startTimer() {
             if (isPlaying) return;
             isPlaying = true;
+            setMinimalMode(true);
             timerId = setInterval(() => {
                 if (timeLeft > 0) {
                     timeLeft--;
@@ -518,6 +554,7 @@
             clearInterval(timerId);
             timerId = null;
             isPlaying = false;
+            setMinimalMode(false);
         }
 
         function setBreak() {
@@ -536,6 +573,7 @@
             updateTimerDisplay(); 
             document.getElementById('pomo-title').textContent = i18n[currentLang].title;
             document.getElementById('pomo-title').style.color = 'var(--accent-color)';
+            setMinimalMode(false);
         }
 
         function applyCustomTime() {
