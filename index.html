@@ -45,33 +45,33 @@
             z-index: 1;
             pointer-events: none;
         }
-        body::after {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background-image: url("https://upload.wikimedia.org/wikipedia/commons/8/80/World_map_-_low_resolution.svg");
-            background-position: 50% 50%;
-            background-repeat: no-repeat;
-            background-size: 130% auto;
-            opacity: 0.1;
+        .world-map-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 200%;
+            height: 100%;
             z-index: 0;
-            filter: grayscale(38%) invert(86%) sepia(11%) saturate(180%) hue-rotate(170deg) brightness(55%) contrast(95%);
             pointer-events: none;
-            animation: mapGhostScroll 28s linear infinite;
+            opacity: 0.08;
+            filter: grayscale(40%) invert(86%) sepia(10%) saturate(170%) hue-rotate(170deg) brightness(52%) contrast(94%);
+            background-image:
+                url("https://upload.wikimedia.org/wikipedia/commons/8/80/World_map_-_low_resolution.svg"),
+                url("https://upload.wikimedia.org/wikipedia/commons/8/80/World_map_-_low_resolution.svg");
+            background-size: 50% auto, 50% auto;
+            background-position: 0% 50%, 50% 50%;
+            background-repeat: no-repeat;
+            transform: translate3d(0, 0, 0);
+            animation: mapGhostScroll 24s linear infinite;
             animation-play-state: paused;
+            will-change: transform;
         }
-        body.timer-running::after {
+        body.timer-running .world-map-layer {
             animation-play-state: running;
         }
         @keyframes mapGhostScroll {
-            0% {
-                background-position: 50% 50%;
-                transform: translateX(0);
-            }
-            100% {
-                background-position: 92% 50%;
-                transform: translateX(-7%);
-            }
+            from { transform: translate3d(0, 0, 0); }
+            to { transform: translate3d(-50%, 0, 0); }
         }
         .lang-switch {
             position: fixed;
@@ -326,6 +326,7 @@
 </head>
 <body>
 
+    <div class="world-map-layer" aria-hidden="true"></div>
     <button class="lang-switch" onclick="toggleLang()">EN / 中文</button>
     <div class="pomo-stats" id="pomo-stats">COMPLETED: 00</div>
 
