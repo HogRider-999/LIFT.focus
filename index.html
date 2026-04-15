@@ -45,33 +45,30 @@
             z-index: 1;
             pointer-events: none;
         }
-        .world-map-layer {
+        .video-bg {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 200%;
-            height: 100%;
+            inset: 0;
             z-index: 0;
             pointer-events: none;
-            opacity: 0.08;
-            filter: grayscale(40%) invert(86%) sepia(10%) saturate(170%) hue-rotate(170deg) brightness(52%) contrast(94%);
-            background-image:
-                url("https://upload.wikimedia.org/wikipedia/commons/8/80/World_map_-_low_resolution.svg"),
-                url("https://upload.wikimedia.org/wikipedia/commons/8/80/World_map_-_low_resolution.svg");
-            background-size: 50% auto, 50% auto;
-            background-position: 0% 50%, 50% 50%;
-            background-repeat: no-repeat;
-            transform: translate3d(0, 0, 0);
-            animation: mapGhostScroll 24s linear infinite;
-            animation-play-state: paused;
-            will-change: transform;
+            overflow: hidden;
         }
-        body.timer-running .world-map-layer {
-            animation-play-state: running;
+        .video-bg::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: rgba(3, 6, 12, 0.58);
         }
-        @keyframes mapGhostScroll {
-            from { transform: translate3d(0, 0, 0); }
-            to { transform: translate3d(-50%, 0, 0); }
+        .video-bg iframe {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 177.78vh;
+            height: 100vh;
+            min-width: 100vw;
+            min-height: 56.25vw;
+            transform: translate(-50%, -50%) scale(1.08);
+            border: 0;
+            filter: saturate(0.78) brightness(0.42) contrast(1.05);
         }
         .lang-switch {
             position: fixed;
@@ -326,7 +323,15 @@
 </head>
 <body>
 
-    <div class="world-map-layer" aria-hidden="true"></div>
+    <div class="video-bg" aria-hidden="true">
+        <iframe
+            src="https://www.youtube.com/embed/lZTKUYnVPpU?autoplay=1&mute=1&loop=1&playlist=lZTKUYnVPpU&controls=0&modestbranding=1&rel=0"
+            title="Background video"
+            loading="lazy"
+            allow="autoplay; fullscreen; encrypted-media"
+            referrerpolicy="strict-origin-when-cross-origin">
+        </iframe>
+    </div>
     <button class="lang-switch" onclick="toggleLang()">EN / 中文</button>
     <div class="pomo-stats" id="pomo-stats">COMPLETED: 00</div>
 
@@ -491,7 +496,6 @@
         function startTimer() {
             if (isPlaying) return;
             isPlaying = true;
-            document.body.classList.add('timer-running');
             timerId = setInterval(() => {
                 if (timeLeft > 0) {
                     timeLeft--;
@@ -514,7 +518,6 @@
             clearInterval(timerId);
             timerId = null;
             isPlaying = false;
-            document.body.classList.remove('timer-running');
         }
 
         function setBreak() {
@@ -533,7 +536,6 @@
             updateTimerDisplay(); 
             document.getElementById('pomo-title').textContent = i18n[currentLang].title;
             document.getElementById('pomo-title').style.color = 'var(--accent-color)';
-            document.body.classList.remove('timer-running');
         }
 
         function applyCustomTime() {
