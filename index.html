@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LIFT | Focus & Do</title>
+    <title>Focus & Do</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#121212">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -11,47 +11,86 @@
     <link href="https://fonts.googleapis.com/css2?family=Silkscreen&family=Inter:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #121212;
-            --card-bg: #1e1e1e;
-            --accent-color: #00ff41;
-            --text-main: #ffffff;
-            --text-dim: #888;
-            --border-style: 2px solid #333;
+            --bg-color: #090b10;
+            --card-bg: rgba(19, 24, 34, 0.72);
+            --card-bg-strong: rgba(15, 20, 29, 0.92);
+            --accent-color: #57ff9f;
+            --accent-sub: #6fd3ff;
+            --text-main: #f5f7ff;
+            --text-dim: #96a0ba;
+            --border-style: 1px solid rgba(111, 211, 255, 0.25);
         }
         * { box-sizing: border-box; }
         body {
             margin: 0;
             padding: 0;
-            background-color: var(--bg-color);
+            background:
+                radial-gradient(circle at 15% 20%, rgba(87, 255, 159, 0.08), transparent 35%),
+                radial-gradient(circle at 80% 5%, rgba(111, 211, 255, 0.08), transparent 30%),
+                linear-gradient(145deg, #03050a, #060b15 45%, #050916);
             color: var(--text-main);
             font-family: 'Inter', sans-serif;
             height: 100vh;
             display: flex;
             overflow: hidden;
+            position: relative;
         }
         body::before {
             content: "";
             position: absolute;
-            width: 100%; height: 100%;
+            inset: 0;
             background-image: radial-gradient(#2a2a2a 1px, transparent 0);
             background-size: 24px 24px;
-            opacity: 0.5;
-            z-index: -1;
+            opacity: 0.2;
+            z-index: 1;
+            pointer-events: none;
+        }
+        body::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background-image: url("https://upload.wikimedia.org/wikipedia/commons/8/80/World_map_-_low_resolution.svg");
+            background-position: 50% 50%;
+            background-repeat: no-repeat;
+            background-size: 130% auto;
+            opacity: 0.1;
+            z-index: 0;
+            filter: grayscale(38%) invert(86%) sepia(11%) saturate(180%) hue-rotate(170deg) brightness(55%) contrast(95%);
+            pointer-events: none;
+            animation: mapGhostScroll 28s linear infinite;
+            animation-play-state: paused;
+        }
+        body.timer-running::after {
+            animation-play-state: running;
+        }
+        @keyframes mapGhostScroll {
+            0% {
+                background-position: 50% 50%;
+                transform: translateX(0);
+            }
+            100% {
+                background-position: 92% 50%;
+                transform: translateX(-7%);
+            }
         }
         .lang-switch {
             position: fixed;
             top: 20px;
             left: 20px;
-            background: transparent;
-            border: 1px solid #333;
-            color: var(--text-dim);
+            background: rgba(10, 14, 22, 0.75);
+            backdrop-filter: blur(8px);
+            border: var(--border-style);
+            color: #dce7ff;
             padding: 8px 12px;
             cursor: pointer;
             font-family: 'Silkscreen', sans-serif;
             font-size: 0.9rem;
             z-index: 100;
         }
-        .lang-switch:hover { color: var(--accent-color); border-color: var(--accent-color); }
+        .lang-switch:hover {
+            color: var(--accent-color);
+            border-color: rgba(87, 255, 159, 0.55);
+        }
         .pomo-stats {
             position: fixed;
             top: 20px;
@@ -60,7 +99,7 @@
             color: var(--accent-color);
             font-size: 1rem;
             z-index: 100;
-            text-shadow: 1px 1px 0px #000;
+            text-shadow: 0 0 18px rgba(87, 255, 159, 0.35);
         }
         .focus-container {
             flex-grow: 1;
@@ -68,6 +107,7 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
+            z-index: 2;
         }
         .pixel-title {
             font-family: 'Silkscreen', sans-serif;
@@ -75,10 +115,11 @@
             color: var(--accent-color);
             margin-bottom: 25px;
             letter-spacing: 4px;
-            text-shadow: 2px 2px 0px #000;
+            text-shadow: 0 0 24px rgba(87, 255, 159, 0.45);
         }
         .timer-box {
             background: var(--card-bg);
+            backdrop-filter: blur(16px);
             border: var(--border-style);
             padding: 50px 60px;
             text-align: center;
@@ -87,14 +128,15 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            box-shadow: 10px 10px 0px rgba(0,0,0,0.5);
+            border-radius: 20px;
+            box-shadow: 0 22px 50px rgba(0, 0, 0, 0.46), inset 0 0 0 1px rgba(255, 255, 255, 0.03);
         }
         .timer-display {
             font-family: 'Silkscreen', sans-serif;
             font-size: 9.5rem;
             margin: 10px 0 20px 0;
             color: var(--text-main);
-            text-shadow: 6px 6px 0px var(--accent-color), -2px -2px 0px #000; 
+            text-shadow: 0 0 20px rgba(87, 255, 159, 0.32); 
             width: 500px;
             text-align: center;
             letter-spacing: 2px;
@@ -110,11 +152,63 @@
             text-overflow: ellipsis;
             background: rgba(0,0,0,0.3);
             padding: 15px 30px;
-            border: 1px solid #333;
+            border: var(--border-style);
+            border-radius: 14px;
         }
         .current-mission span { color: var(--text-main); }
+        .time-settings {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+        .setting-item {
+            display: flex;
+            flex-direction: column;
+            text-align: left;
+            gap: 6px;
+            min-width: 118px;
+        }
+        .setting-item label {
+            font-size: 0.74rem;
+            letter-spacing: 1px;
+            color: var(--text-dim);
+            font-family: 'Silkscreen', sans-serif;
+        }
+        .setting-item input {
+            background: rgba(5, 10, 18, 0.84);
+            color: var(--text-main);
+            border: var(--border-style);
+            border-radius: 10px;
+            padding: 10px 12px;
+            width: 118px;
+            outline: none;
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+        }
+        .setting-item input:focus {
+            border-color: rgba(87, 255, 159, 0.55);
+            box-shadow: 0 0 0 3px rgba(87, 255, 159, 0.16);
+        }
+        .apply-btn {
+            height: 40px;
+            background: linear-gradient(135deg, rgba(87, 255, 159, 0.18), rgba(111, 211, 255, 0.18));
+            border: var(--border-style);
+            color: var(--text-main);
+            border-radius: 10px;
+            padding: 0 16px;
+            font-family: 'Silkscreen', sans-serif;
+            cursor: pointer;
+        }
+        .apply-btn:hover {
+            transform: translateY(-2px);
+            border-color: rgba(87, 255, 159, 0.7);
+            color: var(--accent-color);
+        }
         .controls button {
-            background: transparent;
+            background: rgba(5, 10, 18, 0.72);
             border: var(--border-style);
             color: var(--text-main);
             padding: 12px 20px;
@@ -126,10 +220,11 @@
             text-transform: uppercase;
         }
         .controls button:hover {
-            background: var(--text-main);
-            color: var(--bg-color);
+            background: rgba(87, 255, 159, 0.18);
+            color: var(--accent-color);
             transform: translateY(-3px);
-            box-shadow: 5px 5px 0px var(--accent-color);
+            box-shadow: 0 8px 20px rgba(87, 255, 159, 0.2);
+            border-color: rgba(87, 255, 159, 0.65);
         }
         .hotkey-hint {
             margin-top: 30px;
@@ -144,7 +239,8 @@
             top: 0;
             width: 420px;
             height: 100%;
-            background: var(--card-bg);
+            background: var(--card-bg-strong);
+            backdrop-filter: blur(16px);
             border-left: var(--border-style);
             transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
             z-index: 50;
@@ -157,7 +253,7 @@
             left: -48px;
             top: 50%;
             transform: translateY(-50%);
-            background: var(--card-bg);
+            background: var(--card-bg-strong);
             border: var(--border-style);
             border-right: none;
             color: var(--accent-color);
@@ -222,6 +318,9 @@
             .timer-box { min-width: 90%; padding: 30px; }
             .timer-display { font-size: 4.5rem; width: auto; }
             .hotkey-hint { display: none; }
+            .time-settings { gap: 8px; }
+            .setting-item { min-width: 100px; }
+            .setting-item input { width: 100px; }
         }
     </style>
 </head>
@@ -237,6 +336,17 @@
             
             <div class="current-mission" id="current-mission">
                 TARGET: <span>STANDBY...</span>
+            </div>
+            <div class="time-settings">
+                <div class="setting-item">
+                    <label id="focus-label" for="focus-minutes">FOCUS (MIN)</label>
+                    <input type="number" id="focus-minutes" min="1" max="180" step="1">
+                </div>
+                <div class="setting-item">
+                    <label id="break-label" for="break-minutes">BREAK (MIN)</label>
+                    <input type="number" id="break-minutes" min="1" max="60" step="1">
+                </div>
+                <button class="apply-btn" id="btn-apply-time" onclick="applyCustomTime()">APPLY</button>
             </div>
 
             <div class="controls">
@@ -263,12 +373,14 @@
 
     <script>
         let currentLang = 'en';
-        let timeLeft = 25 * 60;
+        const defaultConfig = { focusMinutes: 25, breakMinutes: 5 };
+        let timerConfig = loadTimerConfig();
+        let timeLeft = timerConfig.focusMinutes * 60;
         let timerId = null;
         let isPlaying = false;
         let currentMode = 'focus';
-        let tasks = JSON.parse(localStorage.getItem('lift_tasks')) || [];
-        let completedPomos = parseInt(localStorage.getItem('lift_pomos')) || 0;
+        let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+        let completedPomos = parseInt(localStorage.getItem('pomos')) || 0;
 
         const i18n = {
             en: {
@@ -276,8 +388,10 @@
                 start: "START", break: "BREAK", pause: "PAUSE", reset: "RESET",
                 tasks: "TASKS", todoTitle: "TO-DO LIST",
                 placeholder: "NEXT MISSION...", add: "ADD",
+                focusLabel: "FOCUS (MIN)", breakLabel: "BREAK (MIN)", apply: "APPLY",
                 alertPomo: "MISSION ACCOMPLISHED. REST NOW.",
                 alertBreak: "BREAK OVER. BACK TO WORK.",
+                alertInvalidTime: "Please enter valid minutes.",
                 target: "TARGET", standby: "STANDBY...", completed: "COMPLETED"
             },
             zh: {
@@ -285,11 +399,36 @@
                 start: "開始", break: "休息", pause: "暫停", reset: "重置",
                 tasks: "待辦事項", todoTitle: "任務清單",
                 placeholder: "下一項任務...", add: "新增",
+                focusLabel: "專注時間(分)", breakLabel: "休息時間(分)", apply: "套用",
                 alertPomo: "專注完成。立即休息。",
                 alertBreak: "休息結束。準備開始。",
+                alertInvalidTime: "請輸入有效的分鐘數。",
                 target: "當前目標", standby: "待命中...", completed: "今日完成"
             }
         };
+
+        function sanitizeMinutes(value, min, max, fallback) {
+            const num = Number(value);
+            if (!Number.isFinite(num)) return fallback;
+            return Math.max(min, Math.min(max, Math.round(num)));
+        }
+
+        function loadTimerConfig() {
+            try {
+                const saved = JSON.parse(localStorage.getItem('timerConfig'));
+                if (!saved) return { ...defaultConfig };
+                return {
+                    focusMinutes: sanitizeMinutes(saved.focusMinutes, 1, 180, defaultConfig.focusMinutes),
+                    breakMinutes: sanitizeMinutes(saved.breakMinutes, 1, 60, defaultConfig.breakMinutes)
+                };
+            } catch (error) {
+                return { ...defaultConfig };
+            }
+        }
+
+        function saveTimerConfig() {
+            localStorage.setItem('timerConfig', JSON.stringify(timerConfig));
+        }
 
         document.addEventListener('keydown', (e) => {
             if (e.target.tagName === 'INPUT') return;
@@ -321,6 +460,9 @@
             document.getElementById('btn-break').textContent = d.break;
             document.getElementById('btn-pause').textContent = d.pause;
             document.getElementById('btn-reset').textContent = d.reset;
+            document.getElementById('focus-label').textContent = d.focusLabel;
+            document.getElementById('break-label').textContent = d.breakLabel;
+            document.getElementById('btn-apply-time').textContent = d.apply;
             document.getElementById('toggle-text').textContent = d.tasks;
             document.getElementById('todo-title').textContent = d.todoTitle;
             document.getElementById('task-input').placeholder = d.placeholder;
@@ -329,9 +471,14 @@
             renderTasks();
         }
 
+        function syncDurationInputs() {
+            document.getElementById('focus-minutes').value = timerConfig.focusMinutes;
+            document.getElementById('break-minutes').value = timerConfig.breakMinutes;
+        }
+
         function updatePomoCount() {
             document.getElementById('pomo-stats').textContent = `${i18n[currentLang].completed}: ${completedPomos.toString().padStart(2, '0')}`;
-            localStorage.setItem('lift_pomos', completedPomos);
+            localStorage.setItem('pomos', completedPomos);
         }
 
         function updateTimerDisplay() {
@@ -343,6 +490,7 @@
         function startTimer() {
             if (isPlaying) return;
             isPlaying = true;
+            document.body.classList.add('timer-running');
             timerId = setInterval(() => {
                 if (timeLeft > 0) {
                     timeLeft--;
@@ -365,24 +513,45 @@
             clearInterval(timerId);
             timerId = null;
             isPlaying = false;
+            document.body.classList.remove('timer-running');
         }
 
         function setBreak() {
             pauseTimer();
             currentMode = 'break';
-            timeLeft = 5 * 60;
+            timeLeft = timerConfig.breakMinutes * 60;
             updateTimerDisplay();
             document.getElementById('pomo-title').textContent = i18n[currentLang].breakTitle;
-            document.getElementById('pomo-title').style.color = '#00e5ff';
+            document.getElementById('pomo-title').style.color = 'var(--accent-sub)';
         }
 
         function resetTimer() { 
             pauseTimer(); 
             currentMode = 'focus';
-            timeLeft = 25 * 60; 
+            timeLeft = timerConfig.focusMinutes * 60; 
             updateTimerDisplay(); 
             document.getElementById('pomo-title').textContent = i18n[currentLang].title;
             document.getElementById('pomo-title').style.color = 'var(--accent-color)';
+            document.body.classList.remove('timer-running');
+        }
+
+        function applyCustomTime() {
+            const focusInput = document.getElementById('focus-minutes');
+            const breakInput = document.getElementById('break-minutes');
+
+            const focusValue = Number(focusInput.value);
+            const breakValue = Number(breakInput.value);
+            if (!Number.isFinite(focusValue) || !Number.isFinite(breakValue) || focusValue <= 0 || breakValue <= 0) {
+                alert(i18n[currentLang].alertInvalidTime);
+                syncDurationInputs();
+                return;
+            }
+
+            timerConfig.focusMinutes = sanitizeMinutes(focusValue, 1, 180, defaultConfig.focusMinutes);
+            timerConfig.breakMinutes = sanitizeMinutes(breakValue, 1, 60, defaultConfig.breakMinutes);
+            saveTimerConfig();
+            syncDurationInputs();
+            resetTimer();
         }
 
         function toggleSidebar() { 
@@ -408,7 +577,7 @@
         }
 
         function saveAndRender() {
-            localStorage.setItem('lift_tasks', JSON.stringify(tasks));
+            localStorage.setItem('tasks', JSON.stringify(tasks));
             renderTasks();
         }
 
@@ -443,6 +612,7 @@
             if (e.key === 'Enter') addTask();
         });
 
+        syncDurationInputs();
         updateUI();
         updateTimerDisplay();
     </script>
