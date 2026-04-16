@@ -21,6 +21,17 @@
             --border-style: 1px solid rgba(111, 211, 255, 0.25);
         }
         * { box-sizing: border-box; }
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
         body {
             margin: 0;
             padding: 0;
@@ -51,6 +62,7 @@
             z-index: 0;
             pointer-events: none;
             overflow: hidden;
+            display: none;
         }
         .video-bg::after {
             content: "";
@@ -69,6 +81,12 @@
             transform: translate(-50%, -50%) scale(1.08);
             border: 0;
             filter: saturate(0.78) brightness(0.42) contrast(1.05);
+        }
+        body.video-solid {
+            background: var(--bg-color);
+        }
+        body.video-solid::before {
+            opacity: 0;
         }
         .lang-switch {
             position: fixed;
@@ -293,6 +311,63 @@
             letter-spacing: 2px;
         }
         .todo-content { padding: 40px; height: 100%; display: flex; flex-direction: column; }
+        .video-settings {
+            margin-top: 22px;
+            padding-top: 18px;
+            border-top: 1px solid rgba(111, 211, 255, 0.18);
+        }
+        .video-settings-title {
+            font-family: 'Silkscreen', sans-serif;
+            font-size: 1rem;
+            color: var(--accent-sub);
+            margin-bottom: 12px;
+            letter-spacing: 1px;
+        }
+        .video-mode-row {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        #video-mode-select {
+            background: rgba(5, 10, 18, 0.84);
+            color: var(--text-main);
+            border: var(--border-style);
+            border-radius: 10px;
+            padding: 10px 12px;
+            outline: none;
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+        }
+        #video-mode-select:focus {
+            border-color: rgba(87, 255, 159, 0.55);
+            box-shadow: 0 0 0 3px rgba(87, 255, 159, 0.16);
+        }
+        .youtube-options {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        #youtube-link {
+            flex: 1 1 220px;
+            background: rgba(0,0,0,0.3);
+            border: var(--border-style);
+            border-radius: 10px;
+            padding: 12px 14px;
+            color: var(--text-main);
+            outline: none;
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+        }
+        #youtube-link:focus {
+            border-color: rgba(87, 255, 159, 0.55);
+            box-shadow: 0 0 0 3px rgba(87, 255, 159, 0.16);
+        }
+        .video-apply {
+            height: 42px;
+            padding: 0 18px;
+        }
         .todo-header {
             font-family: 'Silkscreen', sans-serif;
             font-size: 1.8rem;
@@ -354,13 +429,14 @@
 </head>
 <body>
 
-    <div class="video-bg" aria-hidden="true">
+    <div class="video-bg" id="video-bg" aria-hidden="true">
         <iframe
-            src="https://www.youtube.com/embed/lZTKUYnVPpU?autoplay=1&mute=1&loop=1&playlist=lZTKUYnVPpU&controls=0&modestbranding=1&rel=0"
+            id="video-iframe"
             title="Background video"
             loading="lazy"
             allow="autoplay; fullscreen; encrypted-media"
-            referrerpolicy="strict-origin-when-cross-origin">
+            referrerpolicy="strict-origin-when-cross-origin"
+            tabindex="-1">
         </iframe>
     </div>
     <button class="lang-switch" onclick="toggleLang()">EN / 中文</button>
@@ -405,6 +481,26 @@
                 <button onclick="addTask()">ADD</button>
             </div>
             <ul class="task-list" id="task-list"></ul>
+            <div class="video-settings">
+                <div class="video-settings-title" id="video-settings-title">VIDEO BACKGROUND</div>
+                <div class="video-mode-row">
+                    <label class="sr-only" for="video-mode-select">Video mode</label>
+                    <select id="video-mode-select">
+                        <option value="solid" id="opt-video-solid">SOLID</option>
+                        <option value="youtube" id="opt-video-youtube">YOUTUBE</option>
+                    </select>
+                </div>
+                <div id="youtube-options" class="youtube-options" style="display:none;">
+                    <label class="sr-only" for="youtube-link">YouTube link</label>
+                    <input
+                        type="url"
+                        id="youtube-link"
+                        placeholder="Paste YouTube link"
+                        autocomplete="off"
+                        inputmode="url">
+                    <button class="apply-btn video-apply" id="btn-set-video" type="button">SET</button>
+                </div>
+            </div>
         </div>
     </aside>
 
@@ -418,6 +514,7 @@
         let currentMode = 'focus';
         let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
         let completedPomos = parseInt(localStorage.getItem('pomos')) || 0;
+        let videoConfig = { mode: 'solid', youtubeUrl: '' };
 
         const i18n = {
             en: {
@@ -426,6 +523,12 @@
                 tasks: "TASKS", todoTitle: "TO-DO LIST",
                 placeholder: "NEXT MISSION...", add: "ADD",
                 focusLabel: "FOCUS (MIN)", breakLabel: "BREAK (MIN)", apply: "APPLY",
+                videoTitle: "VIDEO BACKGROUND",
+                videoSolidOption: "SOLID",
+                videoYoutubeOption: "YOUTUBE",
+                youtubePlaceholder: "Paste YouTube link",
+                setVideo: "SET",
+                invalidYoutube: "Please paste a valid YouTube link.",
                 alertPomo: "MISSION ACCOMPLISHED. REST NOW.",
                 alertBreak: "BREAK OVER. BACK TO WORK.",
                 alertInvalidTime: "Please enter valid minutes.",
@@ -437,6 +540,12 @@
                 tasks: "待辦事項", todoTitle: "任務清單",
                 placeholder: "下一項任務...", add: "新增",
                 focusLabel: "專注時間(分)", breakLabel: "休息時間(分)", apply: "套用",
+                videoTitle: "影片背景",
+                videoSolidOption: "單色",
+                videoYoutubeOption: "YouTube",
+                youtubePlaceholder: "貼上 YouTube 連結",
+                setVideo: "設定",
+                invalidYoutube: "請貼上正確的 YouTube 連結。",
                 alertPomo: "專注完成。立即休息。",
                 alertBreak: "休息結束。準備開始。",
                 alertInvalidTime: "請輸入有效的分鐘數。",
@@ -465,6 +574,119 @@
 
         function saveTimerConfig() {
             localStorage.setItem('timerConfig', JSON.stringify(timerConfig));
+        }
+
+        function loadVideoConfig() {
+            try {
+                const saved = JSON.parse(localStorage.getItem('videoConfig'));
+                if (!saved) return { mode: 'solid', youtubeUrl: '' };
+                const mode = saved.mode === 'youtube' ? 'youtube' : 'solid';
+                return {
+                    mode,
+                    youtubeUrl: typeof saved.youtubeUrl === 'string' ? saved.youtubeUrl : ''
+                };
+            } catch (e) {
+                return { mode: 'solid', youtubeUrl: '' };
+            }
+        }
+
+        function saveVideoConfig() {
+            localStorage.setItem('videoConfig', JSON.stringify(videoConfig));
+        }
+
+        function extractYouTubeId(input) {
+            if (!input) return null;
+            const str = String(input).trim();
+            if (/^[a-zA-Z0-9_-]{11}$/.test(str)) return str;
+
+            const patterns = [
+                /youtu\.be\/([a-zA-Z0-9_-]{11})/,
+                /youtube\.com\/watch\?v=([a-zA-Z0-9_-]{11})/,
+                /youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/,
+                /youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/
+            ];
+            for (const re of patterns) {
+                const m = str.match(re);
+                if (m && m[1]) return m[1];
+            }
+            return null;
+        }
+
+        function makeYouTubeEmbedSrc(videoId) {
+            const encoded = encodeURIComponent(videoId);
+            return `https://www.youtube.com/embed/${encoded}?autoplay=1&mute=1&loop=1&playlist=${encoded}&controls=0&modestbranding=1&rel=0`;
+        }
+
+        function applyVideoSettings(mode, youtubeUrl) {
+            const bg = document.getElementById('video-bg');
+            const iframe = document.getElementById('video-iframe');
+            const youtubeOptions = document.getElementById('youtube-options');
+
+            const id = extractYouTubeId(youtubeUrl || '');
+
+            document.body.classList.toggle('video-solid', mode === 'solid');
+            youtubeOptions.style.display = mode === 'youtube' ? 'flex' : 'none';
+
+            if (mode === 'youtube' && id) {
+                bg.style.display = 'block';
+                iframe.src = makeYouTubeEmbedSrc(id);
+                return true;
+            }
+
+            // Solid mode (or invalid link): hide iframe completely.
+            bg.style.display = 'none';
+            iframe.src = '';
+            return false;
+        }
+
+        function initVideoSettings() {
+            videoConfig = loadVideoConfig();
+
+            const modeSelect = document.getElementById('video-mode-select');
+            const youtubeInput = document.getElementById('youtube-link');
+            const applyBtn = document.getElementById('btn-set-video');
+
+            modeSelect.value = videoConfig.mode;
+            youtubeInput.value = videoConfig.youtubeUrl || '';
+            applyVideoSettings(videoConfig.mode, videoConfig.youtubeUrl);
+
+            modeSelect.addEventListener('change', () => {
+                const nextMode = modeSelect.value;
+                videoConfig.mode = nextMode;
+                // For solid mode, no need to validate link.
+                if (nextMode === 'solid') {
+                    saveVideoConfig();
+                    applyVideoSettings('solid', '');
+                    return;
+                }
+
+                // For youtube mode, wait for SET button unless link is already valid.
+                const id = extractYouTubeId(youtubeInput.value);
+                if (id) {
+                    videoConfig.youtubeUrl = youtubeInput.value.trim();
+                    saveVideoConfig();
+                    applyVideoSettings('youtube', videoConfig.youtubeUrl);
+                } else {
+                    applyVideoSettings('youtube', '');
+                }
+            });
+
+            applyBtn.addEventListener('click', () => {
+                if (videoConfig.mode !== 'youtube') return;
+                const url = youtubeInput.value.trim();
+                const id = extractYouTubeId(url);
+                if (!id) {
+                    alert(i18n[currentLang].invalidYoutube);
+                    return;
+                }
+                videoConfig.youtubeUrl = url;
+                saveVideoConfig();
+                applyVideoSettings('youtube', videoConfig.youtubeUrl);
+            });
+
+            youtubeInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') applyBtn.click();
+            });
         }
 
         document.addEventListener('keydown', (e) => {
@@ -504,6 +726,13 @@
             document.getElementById('todo-title').textContent = d.todoTitle;
             document.getElementById('task-input').placeholder = d.placeholder;
             document.querySelector('.todo-input-group button').textContent = d.add;
+
+            document.getElementById('video-settings-title').textContent = d.videoTitle;
+            document.getElementById('opt-video-solid').textContent = d.videoSolidOption;
+            document.getElementById('opt-video-youtube').textContent = d.videoYoutubeOption;
+            document.getElementById('youtube-link').placeholder = d.youtubePlaceholder;
+            document.getElementById('btn-set-video').textContent = d.setVideo;
+
             updatePomoCount();
             renderTasks();
         }
@@ -656,6 +885,7 @@
         syncDurationInputs();
         updateUI();
         updateTimerDisplay();
+        initVideoSettings();
     </script>
 </body>
 </html>
